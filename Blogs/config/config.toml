@@ -1,0 +1,25 @@
+[viewer]
+    Title = "Go语言博客"
+    Description = "Go语言博客"
+    Logo = "/resource/images/logo.png"
+    Navigation = ["首页","/", "GO语言","/golang", "归档","/pigeonhole", "关于","/about"]
+    Bilibili = "https://bilibili.com/"
+    Zhihu = "https://www.zhihu.com/"
+    Avatar = "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Finews.gtimg.com%2Fnewsapp_bt%2F0%2F13147603927%2F1000.jpg&refer=http%3A%2F%2Finews.gtimg.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1647242040&t=c6108010ed46b4acebe18955acdd2d24"
+    UserName = "张三"
+    UserDesc = "长得非常帅的程序员"
+[system]
+    CdnURL = "/resource"
+    # 七牛云配置
+    # 访问密钥，可在七牛云控制台获取
+    QiniuAccessKey = "替换自己的"
+    # 密钥，可在七牛云控制台获取
+    QiniuSecretKey = "替换自己的"
+    # 存储桶名称，需要在七牛云控制台创建
+    QiniuBucket = "替换自己的"
+    # 七牛云域名，需要在七牛云控制台绑定
+    QiniuDomain = "替换自己的"
+    Valine = true
+    ValineAppid = "替换自己的"
+    ValineAppkey = "替换自己的"
+    ValineServerURL = "替换自己的"
