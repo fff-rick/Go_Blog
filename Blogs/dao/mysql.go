@@ -14,7 +14,7 @@ import (
 var DB *gorm.DB
 
 func init() {
-	dataSourceName := fmt.Sprintf("root:5923@tcp(localhost:3306)/goblog?charset=utf8&loc=%s&parseTime=true",
+	dataSourceName := fmt.Sprintf("root:xxxxx@tcp(localhost:3306)/goblog?charset=utf8&loc=%s&parseTime=true",
 		url.QueryEscape("Asia/Shanghai"))
 	
 	// 配置 GORM 日志
