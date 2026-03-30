@@ -6,44 +6,20 @@ import (
 )
 
 func GetPostPage(page int, pageSize int) ([]models.Post, error) {
-	sql := "SELECT * FROM posts limit ?,?"
-	offset := (page - 1) * pageSize
-	rows, err := DB.Query(sql, offset, pageSize)
-	if err != nil {
-		log.Println("查询所有post失败：", err)
-		return nil, err
-	}
 	var posts []models.Post
-	for rows.Next() {
-		var p models.Post
-		err := rows.Scan(
-			&p.Pid,
-			&p.Title,
-			&p.Slug,
-			&p.Content,
-			&p.Markdown,
-			&p.CategoryId,
-			&p.UserId,
-			&p.ViewCount,
-			&p.Type,
-			&p.CreateAt,
-			&p.UpdateAt,
-		)
-		if err != nil {
-			log.Println("获取所有post失败：", err)
-			return nil, err
-		}
-		posts = append(posts, p)
+	offset := (page - 1) * pageSize
+	result := DB.Limit(pageSize).Offset(offset).Find(&posts)
+	if result.Error != nil {
+		log.Println("查询所有post失败：", result.Error)
+		return nil, result.Error
 	}
 	return posts, nil
 }
 
 func GetPostCount() int {
-	sql := "select count(*) from posts"
-	row := DB.QueryRow(sql)
-	var count int
-	row.Scan(&count)
-	return count
+	var count int64
+	DB.Model(&models.Post{}).Count(&count)
+	return int(count)
 }
 
 func GetPages(total, page, pageSize int) []int {
@@ -60,161 +36,67 @@ func GetPages(total, page, pageSize int) []int {
 	}
 	return pages
 }
+
 func GetPostPageByCID(cid, page, pageSize int) ([]models.Post, error) {
-	sql := "SELECT * FROM posts where category_id = ? limit ?,? "
-	offset := (page - 1) * pageSize
-	rows, err := DB.Query(sql, cid, offset, pageSize)
-	if err != nil {
-		log.Println("查询所有post失败：", err)
-		return nil, err
-	}
 	var posts []models.Post
-	for rows.Next() {
-		var p models.Post
-		err := rows.Scan(
-			&p.Pid,
-			&p.Title,
-			&p.Slug,
-			&p.Content,
-			&p.Markdown,
-			&p.CategoryId,
-			&p.UserId,
-			&p.ViewCount,
-			&p.Type,
-			&p.CreateAt,
-			&p.UpdateAt,
-		)
-		if err != nil {
-			log.Println("获取所有post失败：", err)
-			return nil, err
-		}
-		posts = append(posts, p)
+	offset := (page - 1) * pageSize
+	result := DB.Where("category_id = ?", cid).Limit(pageSize).Offset(offset).Find(&posts)
+	if result.Error != nil {
+		log.Println("查询所有post失败：", result.Error)
+		return nil, result.Error
 	}
 	return posts, nil
 }
 
 func GetPostCountByCID(cid int) int {
-	sql := "select count(*) from posts where category_id = ?"
-	row := DB.QueryRow(sql, cid)
-	var count int
-	row.Scan(&count)
-	return count
+	var count int64
+	DB.Model(&models.Post{}).Where("category_id = ?", cid).Count(&count)
+	return int(count)
 }
 
 func GetPostByID(id int) (*models.Post, error) {
-	sql := "SELECT * FROM posts WHERE pid = ?"
-	row := DB.QueryRow(sql, id)
-	if err := row.Err(); err != nil {
-		log.Println("获取post失败：", err)
-		return nil, err
+	var post models.Post
+	result := DB.First(&post, id)
+	if result.Error != nil {
+		log.Println("获取post失败：", result.Error)
+		return nil, result.Error
 	}
-	p := &models.Post{}
-	if err := row.Scan(
-		&p.Pid,
-		&p.Title,
-		&p.Slug,
-		&p.Content,
-		&p.Markdown,
-		&p.CategoryId,
-		&p.UserId,
-		&p.ViewCount,
-		&p.Type,
-		&p.CreateAt,
-		&p.UpdateAt,
-	); err != nil {
-		log.Println("获取post失败：", err)
-		return nil, err
-	}
-	return p, nil
+	return &post, nil
 }
 
 func SavePost(p *models.Post) error {
-	sql := "INSERT INTO posts(title, slug, content, markdown, category_id, user_id, view_count, type, create_at, update_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	ret, err := DB.Exec(sql, p.Title, p.Slug, p.Content, p.Markdown, p.CategoryId, p.UserId, p.ViewCount, p.Type, p.CreateAt, p.UpdateAt)
-	if err != nil {
-		log.Println("保存post失败：", err)
-		return err
+	result := DB.Create(p)
+	if result.Error != nil {
+		log.Println("保存post失败：", result.Error)
+		return result.Error
 	}
-	pid, _ := ret.LastInsertId()
-	p.Pid = int(pid)
 	return nil
 }
+
 func UpdatePost(post *models.Post) {
-	sql := "UPDATE post SET title = ?, slug = ?, content = ?, markdown = ?, category_id = ?, view_count = ?, type = ?, update_at = ? WHERE pid = ?"
-	_, err := DB.Exec(
-		sql, post.Title,
-		post.Slug, post.Content,
-		post.Markdown,
-		post.CategoryId,
-		post.ViewCount,
-		post.Type,
-		post.UpdateAt,
-		post.Pid,
-	)
-	if err != nil {
-		log.Println("更新文章失败：", err)
+	result := DB.Save(post)
+	if result.Error != nil {
+		log.Println("更新文章失败：", result.Error)
 		return
 	}
 }
 
 func GetAllPost() ([]models.Post, error) {
-	sql := "SELECT * FROM posts"
-	rows, err := DB.Query(sql)
-	if err != nil {
-		log.Println("获取所有post失败：", err)
-		return nil, err
+	var posts []models.Post
+	result := DB.Find(&posts)
+	if result.Error != nil {
+		log.Println("获取所有post失败：", result.Error)
+		return nil, result.Error
 	}
-	post := []models.Post{}
-	for rows.Next() {
-		var p models.Post
-		if err := rows.Scan(
-			&p.Pid,
-			&p.Title,
-			&p.Slug,
-			&p.Content,
-			&p.Markdown,
-			&p.CategoryId,
-			&p.UserId,
-			&p.ViewCount,
-			&p.Type,
-			&p.CreateAt,
-			&p.UpdateAt,
-		); err != nil {
-			log.Println("获取post失败：", err)
-			return nil, err
-		}
-		post = append(post, p)
-	}
-	return post, nil
+	return posts, nil
 }
 
 func SearchPost(condition string) ([]models.Post, error) {
-	sql := `SELECT * FROM posts WHERE title LIKE ? OR content LIKE ?`
-	rows, err := DB.Query(sql, "%"+condition+"%", "%"+condition+"%")
-	if err != nil {
-		log.Println("获取post失败：", err)
-		return nil, err
-	}
-	posts := []models.Post{}
-	for rows.Next() {
-		var p models.Post
-		if err := rows.Scan(
-			&p.Pid,
-			&p.Title,
-			&p.Slug,
-			&p.Content,
-			&p.Markdown,
-			&p.CategoryId,
-			&p.UserId,
-			&p.ViewCount,
-			&p.Type,
-			&p.CreateAt,
-			&p.UpdateAt,
-		); err != nil {
-			log.Println("获取post失败：", err)
-			return nil, err
-		}
-		posts = append(posts, p)
+	var posts []models.Post
+	result := DB.Where("title LIKE ? OR content LIKE ?", "%"+condition+"%", "%"+condition+"%").Find(&posts)
+	if result.Error != nil {
+		log.Println("获取post失败：", result.Error)
+		return nil, result.Error
 	}
 	return posts, nil
 }

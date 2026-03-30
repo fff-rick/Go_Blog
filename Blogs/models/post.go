@@ -21,6 +21,11 @@ type Post struct {
 	UpdateAt   time.Time `json:"updateAt"`   // 更新时间
 }
 
+// TableName 指定表名
+func (Post) TableName() string {
+	return "posts"
+}
+
 type PostMore struct {
 	Pid          int           `json:"pid"`          // 文章ID
 	Title        string        `json:"title"`        // 文章ID

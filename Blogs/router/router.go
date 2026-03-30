@@ -4,22 +4,37 @@ import (
 	"blogs/api"
 	"blogs/views"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Router() {
-	http.HandleFunc("/", views.HTML.Index)
-	http.HandleFunc("/c/", views.HTML.Category)
-	http.HandleFunc("/login/", views.HTML.Login)
-	http.HandleFunc("/p/", views.HTML.Detail)
-	http.HandleFunc("/pigeonhole", views.HTML.Pigeonhole)
-	http.HandleFunc("/writing/", views.HTML.Writing)
-	http.HandleFunc("/api/v1/post/search", api.API.SearchPost)
-	http.HandleFunc("/api/v1/login", api.API.Login)
-	http.HandleFunc("/api/v1/post", api.API.UpdateAndSavePost)
-	http.HandleFunc("/api/v1/post/", api.API.GetPost)
-	http.HandleFunc("/api/v1/qiniu/token", api.API.QiniuToken)
-	http.Handle(
-		"/resource/",
-		http.StripPrefix("/resource/",
-			http.FileServer(http.Dir("public/resource/"))))
+// 适配器函数，将 http.HandlerFunc 转换为 gin 处理函数
+func adaptHandler(h http.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		h(c.Writer, c.Request)
+	}
+}
+
+func Router() *gin.Engine {
+	r := gin.Default()
+
+	// 静态文件服务
+	r.Static("/resource", "public/resource")
+
+	// HTML 路由
+	r.GET("/", adaptHandler(views.HTML.Index))
+	r.GET("/c/*path", adaptHandler(views.HTML.Category))
+	r.GET("/login/*path", adaptHandler(views.HTML.Login))
+	r.GET("/p/*path", adaptHandler(views.HTML.Detail))
+	r.GET("/pigeonhole", adaptHandler(views.HTML.Pigeonhole))
+	r.GET("/writing/*path", adaptHandler(views.HTML.Writing))
+
+	// API 路由
+	r.GET("/api/v1/post/search", adaptHandler(api.API.SearchPost))
+	r.POST("/api/v1/login", adaptHandler(api.API.Login))
+	r.POST("/api/v1/post", adaptHandler(api.API.UpdateAndSavePost))
+	r.GET("/api/v1/post/", adaptHandler(api.API.GetPost))
+	r.GET("/api/v1/qiniu/token", adaptHandler(api.API.QiniuToken))
+
+	return r
 }

@@ -3,7 +3,6 @@ package server
 import (
 	"blogs/router"
 	"log"
-	"net/http"
 )
 
 type Server struct {
@@ -12,11 +11,10 @@ type Server struct {
 var App = &Server{}
 
 func (*Server) Start(ip, port string) {
-	server := http.Server{
-		Addr: ip + ":" + port,
-	}
-	router.Router()
-	if err := server.ListenAndServe(); err != nil {
+	r := router.Router()
+	addr := ip + ":" + port
+	log.Printf("Server starting on %s\n", addr)
+	if err := r.Run(addr); err != nil {
 		log.Println(err)
 	}
 }

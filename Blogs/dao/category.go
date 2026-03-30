@@ -6,32 +6,21 @@ import (
 )
 
 func GetAllCategory() ([]models.Category, error) {
-	rows, err := DB.Query("SELECT * FROM category")
-	if err != nil {
-		log.Println("查询所有category失败：", err)
-		return nil, err
-	}
 	var categorys []models.Category
-	for rows.Next() {
-		var category models.Category
-		err := rows.Scan(&category.Cid,
-			&category.Name,
-			&category.CreateAt,
-			&category.UpdateAt)
-		if err != nil {
-			log.Println("取值category失败：", err)
-			return nil, err
-		}
-		categorys = append(categorys, category)
-
+	result := DB.Find(&categorys)
+	if result.Error != nil {
+		log.Println("查询所有category失败：", result.Error)
+		return nil, result.Error
 	}
 	return categorys, nil
 }
 
 func GetCategoryNameByID(id int) string {
-	sql := `select name from category where cid = ?`
-	row := DB.QueryRow(sql, id)
-	var name string
-	row.Scan(&name)
-	return name
+	var category models.Category
+	result := DB.Where("cid = ?", id).First(&category)
+	if result.Error != nil {
+		log.Println("获取分类名称失败：", result.Error)
+		return ""
+	}
+	return category.Name
 }

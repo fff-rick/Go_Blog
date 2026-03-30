@@ -14,6 +14,8 @@ func (*HTMLApi) Category(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	categoryTemplate := common.Template.Category
 	cIDStr := strings.TrimPrefix(path, "/c/")
+	// 提取数字部分作为分类 ID
+	cIDStr = strings.Split(cIDStr, ".")[0]
 	cID, err := strconv.Atoi(cIDStr)
 	if err != nil {
 		log.Println("分类参数错误")

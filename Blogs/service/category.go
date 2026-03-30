@@ -22,7 +22,7 @@ func GetPostsByCategoryId(cID, page, pageSize int) (*models.CategoryResponse, er
 		if len(content) > 50 {
 			content = content[:50]
 		}
-		categoryName := dao.GetCategoryNameByID(post.Pid)
+		categoryName := dao.GetCategoryNameByID(post.CategoryId)
 		userName := dao.GetUserNameByID(post.UserId)
 		pm := models.PostMore{
 			Pid:          post.Pid,
